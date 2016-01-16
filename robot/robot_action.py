@@ -1,5 +1,3 @@
-# This is the velocity motion model, which assumes that a robot could be controlled
-# through two velocities, i.e. a translational and arotational velocity.
 import numpy as np
 
 class RobotActionException(Exception):
@@ -9,6 +7,9 @@ class RobotActionException(Exception):
         return repr(self.value)
 
 class RobotAction:
+    # This is the velocity motion model, which assumes that a robot could be
+    # controlled through two velocities, i.e. a translational and a rotational
+    # velocity.
     def __init__(self, v, w):
         self.v = 1.0 * v # linear velocity
         self.w = 1.0 * w # angular velocity
@@ -23,15 +24,13 @@ class RobotAction:
         if (not (isinstance(other, RobotAction))):
             raise RobotActionException('unsupported operator + for ' + str(type(self) + ' and ' + str(type(other))))
             
-        r = RobotAction(0,0)
-        r.v = self.v + other.v
-        r.w = self.w + other.w
-
-        return r
+        return RobotAction(self.v + other.v, \
+                           self.w + other.w)
 
     def ApplyToPose(self, robot_pose, dt):
         '''
-        Apply this action to a robot at robot_pose
+        Find out the outcome of applying this action to a given pose with a
+        specified duration.
         ===INPUT===
         robot_pose: of class RobotPose, the pose before the action
         dt: duration of action
@@ -50,8 +49,8 @@ class RobotAction:
         else: # arc
             r = self.v / self.w
             new_pose.theta = robot_pose.theta + self.w * dt
-            new_pose.x = robot_pose.x - r * np.sin(robot_pose.theta) + r * np.sin(new_pose.theta)
-            new_pose.y = robot_pose.y + r * np.cos(robot_pose.theta) - r * np.cos(new_pose.theta)
+            new_pose.x = robot_pose.x - r * (np.sin(robot_pose.theta) + np.sin(new_pose.theta))
+            new_pose.y = robot_pose.y + r * (np.cos(robot_pose.theta) - np.cos(new_pose.theta))
 
         return new_pose
 

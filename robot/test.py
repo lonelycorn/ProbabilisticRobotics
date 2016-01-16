@@ -93,5 +93,5 @@ print(str(r.ApplyAction(ra, 1)))
 
 ###########
 print('\nRobot load from file:')
-r.LoadFromFile('../robot1.txt')
+r.LoadFromFile('../testcase/robot1.txt')
 print(str(r))

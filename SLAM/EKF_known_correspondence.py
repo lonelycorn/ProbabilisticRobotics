@@ -10,12 +10,12 @@ from SLAM_algorithm import SLAM_Algorithm
 from utility.math import wrap_angle
 
 
-class EKF_SLAM(SLAM_Algorithm):
+class EKF(SLAM_Algorithm):
     def get_feature_selection_matrix(self, k):
         '''
-        get the selection matrix for feature k
+        get the selection matrix for feature k.
         '''
-        m = np.matrix(np.zeros((6, 3*self.N+3)))
+        m = np.matrix(np.zeros((6, 3 * self.N + 3)))
         # robot pose
         m[0, 0] = 1
         m[1, 1] = 1
@@ -29,7 +29,7 @@ class EKF_SLAM(SLAM_Algorithm):
 
     def get_pose_selection_matrix(self):
         '''
-        get the selection matrix for robot pose
+        get the selection matrix for robot pose.
         '''
         return np.matrix(np.eye(3, 3 * self.N + 3))
 
@@ -59,7 +59,7 @@ class EKF_SLAM(SLAM_Algorithm):
         G_t = np.matrix(np.eye(3 * self.N + 3)) + F_x.T * rp_delta_Jacobian * F_x
 
         # line 5
-        self.sigma = G_t * self.sigma * G_t.T + F_x.T * self.R * F_x
+        self.sigma = G_t * self.sigma * G_t.T + F_x.T * self.Q * F_x
 
     def measurement_update(self, measurement):
         '''
@@ -131,16 +131,9 @@ class EKF_SLAM(SLAM_Algorithm):
         
         
         # line 17
-        #~ print("Innovation=")
-        #~ print(H_t * self.sigma * H_t.T + self.Q)
-        K_t = self.sigma * H_t.T * np.linalg.inv(H_t * self.sigma * H_t.T + self.Q)
-        #~ print("K_t=")
-        #~ print(K_t)
+        K_t = self.sigma * H_t.T * np.linalg.inv(H_t * self.sigma * H_t.T + self.R)
         
         # line 18
-        #~ print("K_t*(z-z_hat)")
-        #~ print(K_t*(z-z_hat))
-        
         self.mu = self.mu + K_t * (z - z_hat)
 
         print("mu=")
@@ -155,26 +148,25 @@ class EKF_SLAM(SLAM_Algorithm):
     #     Public API's     #
     #======================#
     def __init__(self):
-        self.mu = np.zeros(1) # state estimate
-        self.sigma = np.zeros(1) # covar estimate
-        self.t_last = 0 # last time of run
-        self.Q = np.zeros(1) # process noise covar
-        self.R = np.zeros(1) # sensor noise covar
-        self.N = 0 # number of features
-        self.trajectory = []
+        self.mu = np.zeros(1)       # state estimate
+        self.sigma = np.zeros(1)    # covar estimate
+        self.tick = 0               # last time of run
+        self.R = np.zeros(1)        # measurement noise covar
+        self.Q = np.zeros(1)        # process noise covar
+        self.N = 0                  # number of features
+        self.trajectory = []        # trajectory recorded
 
-    def Initialize(self, t0, rp, Q, R, N):
+    def Initialize(self, Q, R, N):
         '''
         ===INPUT===
-        t0: initial time stamp
-        rp: initial robot pose
-        Q: process noise covar
-        R: sensor noise covar
-        N: number of features
+        Q: process noise covar.
+        R: sensor noise covar.
+        N: number of features.
         ===OUTPUT===
         none
         '''
-        self.t_last = t0
+        self.tick = 0
+        
         self.N = N
         self.Q = np.matrix(Q)
         self.R = np.matrix(R)
@@ -183,7 +175,6 @@ class EKF_SLAM(SLAM_Algorithm):
         # 0, 1, 2: robot x, y, theta
         # 2*k+3, 2*k+4: x, y of feature k (0..N-1)
         self.mu = np.matrix(np.zeros((3 * N + 3, 1)))
-        self.SetPose(rp)
         
         # initialize the covar
         self.sigma = np.matrix(np.eye(3 * N + 3)) * 1e4 # know nothing about map features. how about signatures?
@@ -196,13 +187,13 @@ class EKF_SLAM(SLAM_Algorithm):
 
         # empty trajectory
         self.trajectory = []
-        self.trajectory.append(rp)
+        self.trajectory.append(self.GetPose())
 
     def Update(self, t, action, measurements):
-        print("EKF Update, t = " + str(t) + ", t_last = " + str(self.t_last))
+        print("EKF Update, t = " + str(t) + ", tick = " + str(self.tick))
         
-        dt = (t - self.t_last) * 1.0
-        self.t_last = t
+        dt = (t - self.tick) * 1.0
+        self.tick = t
         
         self.motion_update(action, dt)
 

@@ -16,21 +16,31 @@ class RobotPose:
         return 'RobotPose: pos = (' + str(self.x) + ', ' + str(self.y) + '), theta = ' + str(self.theta)
 
     def __add__(self, other):
+        '''
+        overload operator +
+        '''
+        if (not (isinstance(other, RobotPose))):
+            raise RobotActionException('unsupported operator + for ' + str(type(self) + ' and ' + str(type(other))))
         return RobotPose(self.x + other.x, \
                          self.y + other.y, \
                          self.theta + other.theta)
 
     def __sub__(self, other):
+        '''
+        overload operator -
+        '''
+        if (not (isinstance(other, RobotPose))):
+            raise RobotActionException('unsupported operator + for ' + str(type(self) + ' and ' + str(type(other))))
         return RobotPose(self.x - other.x, \
                          self.y - other.y, \
                          self.theta - other.theta)
     
     def ApplyAction(self, robot_action, dt):
         '''
-        update current pose by applyin action
+        update current pose with given action and duration
         ===INPUT===
-        robot_action: of class RobotAction, the pose before the action
-        dt: duration of robot_action.
+        robot_action: of class RobotAction, the action to apply
+        dt: duration of rthe action
         ===OUTPUT===
         the robot pose after the update
         '''
@@ -38,8 +48,8 @@ class RobotPose:
         if (not (isinstance(robot_action, RobotAction))):
             raise RobotPoseException('robot_action should be an instance of RobotAction');
 
-        # we don't write down the update equations explicitly, so that we could
-        # play with different RobotAction models
+        # Note: we don't write down the update equations explicitly, so that we
+        # could play with different RobotAction models
         self = robot_action.ApplyToPose(self, dt)
         return self
 

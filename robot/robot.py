@@ -17,9 +17,7 @@ class RobotException(Exception):
 
 class Robot:
     def __init__(self):
-        '''
-        To work with LoadFromFile()
-        '''
+        # These fields will be filled by either LoadFromFile() or Initialize()
         self.sensor = None
         self.translation_noise = None
         self.rotation_noise = None
@@ -31,6 +29,13 @@ class Robot:
                 str(self.rotation_noise) + '\ntrue ' + str(self.true_pose)
 
     def LoadFromFile(self, filename):
+        '''
+        Load robot configuration from the given file
+        ===INPUT===
+        filename: the filename to load the configuration from.
+        ===OUTPUT===
+        None.
+        '''
         print('Loading robot configurations from: ' + filename)
         
         fd = open(filename, "r")
@@ -69,10 +74,20 @@ class Robot:
         # default robot pose
         self.true_pose = RobotPose(0, 0, 0)
 
-    def SetInitialPose(self, initial_pose):
-        if (not (isinstance(initial_pose, RobotPose))):
-            raise RobotException('initial_pose should be an instance of RobotPose')
-        self.true_pose = initial_pose
+    def SetPose(self, pose):
+        '''
+        Set the robot's true pose
+        ===INPUT===
+        pose: the pose to set to
+        ===OUTPUT===
+        None.
+        '''
+        if (not (isinstance(pose, RobotPose))):
+            raise RobotException('pose should be an instance of RobotPose')
+        self.true_pose = pose
+
+    def GetPose(self):
+        return self.true_pose
 
     def Initialize(self, range_sensor, translation_noise, rotation_noise):
         if (not (isinstance(range_sensor, RangeSensor))):
@@ -130,9 +145,6 @@ class Robot:
                 m.append(actual_reading)
                 
         return m
-
-    def GetTruePose(self):
-        return self.true_pose
 
 if __name__ == "__main__":
     pass

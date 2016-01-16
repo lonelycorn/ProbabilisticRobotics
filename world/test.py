@@ -36,5 +36,5 @@ for i in m:
     print(str(i))
 
 print('\nLoad from file')
-w.LoadFromFile("../map1.txt")
+w.LoadFromFile("../testcase/map1.txt")
 print(str(w))

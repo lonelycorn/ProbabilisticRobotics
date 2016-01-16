@@ -30,7 +30,7 @@ nangle.RegisterNoise(0.8, ng)
 nangle.RegisterNoise(0.2, nu)
 
 print('\ntesting RangeSensor\n')
-rs = RangeSensor(ndist, [0.1, 4], nangle, [0,0]) # no limit on angle 
+rs = RangeSensor([0.1, 4], ndist, [0,0], nangle) # no limit on angle 
 print(rs)
 
 m = Measurement(1.0, np.deg2rad(90), 0)
@@ -46,7 +46,7 @@ print('got ' + str(actual_m) + ', visible = ' + str(visible))
 
 print('')
 
-rs = RangeSensor(ndist, [0, 0], nangle, [0, np.pi]) # no limit on dist 
+rs = RangeSensor([0, 0], ndist, [0, np.pi], nangle) # no limit on dist 
 print(rs)
 
 m = Measurement(1.0, np.deg2rad(90), 0)

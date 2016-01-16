@@ -1,32 +1,36 @@
 ===MAPS===
 line 1: an integer N, the number of features in the map
 line 2 ~ N + 1:
-    for line k, there would be three numbers x_k, y_k and s_k, which describes the location and signature of feature k
-    s_k must be an unique integer within [0, N - 1]
+    there are three numbers x_k, y_k and s_k for each line that describe the
+    location and signature of feature k.
+    s_k must be an unique integer within [0, N - 1]. usually s_k == k.
 
 
 ===ROBOTS===
-Part 1: translational noise of robot motion
-An integer N_tn, number of noise components.
-The next N_tn lines, one for each noise component.
-First number is weight.
-Second number indicate noise type. 0 for Gaussian and 1 for uniform
-The rest of the line: parameters for the noise type
+Part 1: translational noise of robot motion.
+    An integer N_tn, number of noise components.
+    The next N_tn lines,
+        each line describe a noise component.
+        the first number is the relative weight.
+        the second number indicates noise type. 0 for Gaussian and 1 for uniform.
+        from the third to the last: parameters for the corresponding noise type.
 
 Part 2: rotational noise of robot motion. Similar to part 1
 
-Part 3: two numbers representing the distance ranges for the sensor
+Part 3: two numbers representing the distance ranges for the sensor.
+        for a sensor without any ditance range limit, put two equal numbers.
 
 Part 4: distance noise for the sensor. Similar to part 1
 
-Part 5: two numbers representing the angle ranges for the sensor
+Part 5: two numbers representing the angle ranges for the sensor.
+        for a sensor without any angle range limit, put two equal numbers.
 
 Part 6: angle noise for the sensor. Similar to part 1
 
-===ACTION HISTORY===
-line 1: three numbers x, y and theta, the initial pose of the robot
-line 2: an integer T, number of steps in the history
-line 3 ~ T + 2:
-    for line k, there are three numbers t_k, v_k and w_k representing the timestamp of action k, and the linear and angular velocities
-    the action would last until the timestamp of the next entry
+===ACTION HISTORIES===
+line 1: an integer T, number of steps in the history
+line 2 ~ T + 1:
+    there are three numbers t_k, v_k and w_k for each line that describe the
+    timestamp, The linear and the angular velocities of the k-th action.
+    the action is active until the time specified (INCLUSIVE).
     
