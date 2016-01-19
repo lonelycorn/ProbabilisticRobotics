@@ -38,6 +38,9 @@ class EKF(SLAM_Algorithm):
         update the state and covar estimate using the action
         c.f page 314, Probabilistic Robotics
         '''
+
+        print("<---- motion_update ---->")
+        
         # delta of pose
         rp = self.GetPose()
         rp_new = rp.ApplyAction(action, dt)
@@ -61,11 +64,16 @@ class EKF(SLAM_Algorithm):
         # line 5
         self.sigma = G_t * self.sigma * G_t.T + F_x.T * self.Q * F_x
 
+        print(self.GetPose())
+
     def measurement_update(self, measurement):
         '''
         update the state and covar estimate using the measurement
         c.f page 314, Probabilistic Robotics
         '''
+        print("<---- measurement_update ---->")
+        print(measurement)
+        
         rp = self.GetPose()
 
         # convert measurement into a matrix
@@ -87,8 +95,6 @@ class EKF(SLAM_Algorithm):
             self.feature_seen[j] = True
             
             print("newly observed " + str(f))
-            #~ print("mu = ")
-            #~ print(self.mu)
 
         fs = self.GetFeature(j)
 
@@ -98,15 +104,14 @@ class EKF(SLAM_Algorithm):
 
         # line 13
         q = delta_x * delta_x + delta_y * delta_y
-        print("delta_x = " + str(delta_x) + " delta_y = " + str(delta_y) + " q= " + str(q))
+        #~ print("delta_x = " + str(delta_x) + " delta_y = " + str(delta_y) + " q= " + str(q))
 
         # line 14, predicted measurement
         z_hat = np.matrix([[np.sqrt(q)], \
                            [wrap_angle(np.arctan2(delta_y, delta_x) - rp.theta)], \
                            [fs.s]])
-        #FIXME: this np.arctan2 - rp.theta is creating problems
-        print("z_hat = ")
-        print(z_hat)
+        #~ print("z_hat = ")
+        #~ print(z_hat)
 
         # line 15
         F_xj = self.get_feature_selection_matrix(j)
@@ -185,16 +190,15 @@ class EKF(SLAM_Algorithm):
         # mark all features as never seen
         self.feature_seen = [False for i in range(N)]
 
-        # empty trajectory
-        self.trajectory = []
-        self.trajectory.append(self.GetPose())
+        # initialize trajectory
+        self.trajectory = [self.GetPose()]
 
     def Update(self, t, action, measurements):
         print("EKF Update, t = " + str(t) + ", tick = " + str(self.tick))
         
         dt = (t - self.tick) * 1.0
         self.tick = t
-        
+
         self.motion_update(action, dt)
 
         for m in measurements:

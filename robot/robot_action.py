@@ -1,4 +1,9 @@
+import sys
+import os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+
 import numpy as np
+from utility.math import angular_velocity_is_trivial
 
 class RobotActionException(Exception):
     def __init__(self, value):
@@ -42,15 +47,15 @@ class RobotAction:
             raise RobotActionException('robot_pose should be an instance of RobotPose');
          
         new_pose = RobotPose(0,0,0)
-        if (self.w < 1.0e-5): # straight line
+        if (angular_velocity_is_trivial(self.w)): # straight line
             new_pose.theta = robot_pose.theta
             new_pose.x = robot_pose.x + self.v * dt * np.cos(robot_pose.theta)
             new_pose.y = robot_pose.y + self.v * dt * np.sin(robot_pose.theta)
         else: # arc
             r = self.v / self.w
             new_pose.theta = robot_pose.theta + self.w * dt
-            new_pose.x = robot_pose.x - r * (np.sin(robot_pose.theta) + np.sin(new_pose.theta))
-            new_pose.y = robot_pose.y + r * (np.cos(robot_pose.theta) - np.cos(new_pose.theta))
+            new_pose.x = robot_pose.x - r * np.sin(robot_pose.theta) + r * np.sin(new_pose.theta)
+            new_pose.y = robot_pose.y + r * np.cos(robot_pose.theta) - r * np.cos(new_pose.theta)
 
         return new_pose
 

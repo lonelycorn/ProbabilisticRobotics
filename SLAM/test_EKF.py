@@ -16,7 +16,7 @@ if __name__ == '__main__':
     dt = 1.0
 
     # load testcase
-    s = Simulator('../testcase/map1.txt', '../testcase/robot2.txt')
+    s = Simulator('../testcase/map1.txt', '../testcase/robot1.txt')
     ah = ActionHistory(dt)
     ah.LoadFromFile('../testcase/action_history1.txt')
 

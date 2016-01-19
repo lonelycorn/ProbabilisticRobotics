@@ -116,7 +116,8 @@ class Robot:
         if (not (isinstance(robot_action, RobotAction))):
             raise RobotException('robot_action should be an instance of RobotAction')
 
-        real_action = RobotAction(self.translation_noise.GetValue(), self.rotation_noise.GetValue())
+        real_action = RobotAction(self.translation_noise.GetValue(), \
+                                  self.rotation_noise.GetValue())
         real_action = real_action + robot_action
 
         self.true_pose = real_action.ApplyToPose(self.true_pose, dt)
@@ -136,7 +137,6 @@ class Robot:
             raise RobotException('world should be an instance or FeatureBasedWorld')
 
         true_measurements = world.GetTrueMeasurements(self.true_pose)
-
         m = []
         for measurement in true_measurements:
             visible, actual_reading = self.sensor.GetActualReading(measurement)

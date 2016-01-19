@@ -1,5 +1,6 @@
 import sys
 import os
+sys.path.insert(1, os.path.join(sys.path[0], '.'))
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 from robot.robot_action import RobotAction
@@ -32,10 +33,6 @@ class ActionHistory:
         # create an artificial terminal
         self.time_history.append(-1.0)
         self.action_history.append(RobotAction(0,0))
-
-        #~ print self.history_length
-        #~ print self.time_history
-        #~ print self.action_history
 
     def Rewind(self):
         '''
