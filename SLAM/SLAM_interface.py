@@ -1,14 +1,12 @@
-import numpy as np
-
 class SLAM_Exception(Exception):
     def __init__(self, value):
         self.value = value
     def __str__(self):
         return repr(self.value)
 
-class SLAM_Algorithm:
+class SLAM_Interface:
     # This class defines an interface for various SLAM algorithms.
-    # This API's shall be overriden to accommodate for different SLAM implementations.
+    # These API's shall be overriden to accommodate for different algorithms.
     def __init__(self):
         raise SLAM_Exception('Must implement the constructor')
 

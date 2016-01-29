@@ -28,7 +28,18 @@ class Plotter:
 
         plt.axis([-self.map_size, self.map_size, -self.map_size, self.map_size])
         plt.title(fig_title)
-        
+
+    def SetTrueTrajectory(self, true_trajectory):
+        self.true_trajectory = true_trajectory
+
+    def setTrueMap(self, true_map):
+        self.true_map = true_map
+
+    def setTrajectory(estimated_trajectory):
+        self.estimated_trajectory = estimated_trajectory
+
+    def setMap(estimated_map):
+        self.estimated_map = estimated_map
 
     def PlotResults(self, true_trajectory, true_map, SLAM_trajectory, SLAM_map):
 
@@ -38,3 +49,6 @@ class Plotter:
 
         plt.show(1)
         plt.show(2)
+
+if __name__ == '__main__':
+    pass

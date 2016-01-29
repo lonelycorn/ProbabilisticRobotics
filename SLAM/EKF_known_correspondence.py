@@ -6,11 +6,27 @@ import numpy as np
 from robot.robot_pose import RobotPose
 from world.feature_state import FeatureState
 from world.feature_based_world import FeatureBasedWorld
-from SLAM_algorithm import SLAM_Algorithm
+from SLAM_interface import SLAM_Interface
 from utility.math import wrap_angle
 
 
-class EKF(SLAM_Algorithm):
+class EKF(SLAM_Interface):
+    def get_feature(self, i):
+        '''
+        get the estimated feature with index i
+        '''
+        return FeatureState(self.mu[3+3*i, 0], \
+                            self.mu[4+3*i, 0], \
+                            self.mu[5+3*i, 0]) # x, y, s
+
+    def set_feature(self, i, feature_state):
+        '''
+        get the estimated feature with index i
+        '''
+        self.mu[3+3*i, 0] = feature_state.x
+        self.mu[4+3*i, 0] = feature_state.y
+        self.mu[5+3*i, 0] = feature_state.s
+        
     def get_feature_selection_matrix(self, k):
         '''
         get the selection matrix for feature k.
@@ -27,6 +43,20 @@ class EKF(SLAM_Algorithm):
         
         return m
 
+    def get_pose(self):
+        '''
+        get estimated robot pose
+        '''
+        return RobotPose(self.mu[0, 0], self.mu[1, 0], self.mu[2, 0]) # x, y, theta
+
+    def set_pose(self, robot_pose):
+        '''
+        set estimated robot pose
+        '''
+        self.mu[0, 0] = robot_pose.x
+        self.mu[1, 0] = robot_pose.y
+        self.mu[2, 0] = robot_pose.theta
+
     def get_pose_selection_matrix(self):
         '''
         get the selection matrix for robot pose.
@@ -42,7 +72,7 @@ class EKF(SLAM_Algorithm):
         print("<---- motion_update ---->")
         
         # delta of pose
-        rp = self.GetPose()
+        rp = self.get_pose()
         rp_new = rp.ApplyAction(action, dt)
         rp_delta = np.matrix(np.zeros((3,1)))
         rp_delta[0, 0] = rp_new.x - rp.x
@@ -64,7 +94,7 @@ class EKF(SLAM_Algorithm):
         # line 5
         self.sigma = G_t * self.sigma * G_t.T + F_x.T * self.Q * F_x
 
-        print(self.GetPose())
+        print(self.get_pose())
 
     def measurement_update(self, measurement):
         '''
@@ -74,7 +104,7 @@ class EKF(SLAM_Algorithm):
         print("<---- measurement_update ---->")
         print(measurement)
         
-        rp = self.GetPose()
+        rp = self.get_pose()
 
         # convert measurement into a matrix
         z = np.matrix([[measurement.r], \
@@ -91,12 +121,12 @@ class EKF(SLAM_Algorithm):
                              rp.y + measurement.r * np.sin(measurement.phi + rp.theta), \
                              measurement.s)
             # line 10, initialize feature state
-            self.SetFeature(j, f)
+            self.set_feature(j, f)
             self.feature_seen[j] = True
             
             print("newly observed " + str(f))
 
-        fs = self.GetFeature(j)
+        fs = self.get_feature(j)
 
         # line 12
         delta_x = fs.x - rp.x
@@ -191,7 +221,7 @@ class EKF(SLAM_Algorithm):
         self.feature_seen = [False for i in range(N)]
 
         # initialize trajectory
-        self.trajectory = [self.GetPose()]
+        self.trajectory = [self.get_pose()]
 
     def Update(self, t, action, measurements):
         print("EKF Update, t = " + str(t) + ", tick = " + str(self.tick))
@@ -205,37 +235,19 @@ class EKF(SLAM_Algorithm):
             self.measurement_update(m)
 
         # save trajectory
-        self.trajectory.append(self.GetPose())
+        self.trajectory.append(self.get_pose())
 
         return self.mu
         
     def Finalize(self):
         # nothing to do
         pass
-
-    def GetFeature(self, i):
-        return FeatureState(self.mu[3+3*i, 0], \
-                            self.mu[4+3*i, 0], \
-                            self.mu[5+3*i, 0]) # x, y, s
-
-    def SetFeature(self, i, feature_state):
-        self.mu[3+3*i, 0] = feature_state.x
-        self.mu[4+3*i, 0] = feature_state.y
-        self.mu[5+3*i, 0] = feature_state.s
         
     def GetMap(self):
         w = FeatureBasedWorld()
         for i in range(self.N):
-            w.AppendFeature(self.GetFeature(i))
+            w.AppendFeature(self.get_feature(i))
         return w
-
-    def GetPose(self):
-        return RobotPose(self.mu[0, 0], self.mu[1, 0], self.mu[2, 0]) # x, y, theta
-
-    def SetPose(self, robot_pose):
-        self.mu[0, 0] = robot_pose.x
-        self.mu[1, 0] = robot_pose.y
-        self.mu[2, 0] = robot_pose.theta
 
     def GetTrajectory(self):
         '''

@@ -66,3 +66,6 @@ class ActionHistory:
             #~ return (None, None)
 
         return (self.tick, self.action_history[self.idx])
+
+if __name__ == '__main__':
+    pass
