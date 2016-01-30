@@ -10,7 +10,7 @@ from SLAM_interface import SLAM_Interface
 from utility.math import wrap_angle
 
 
-class EKF(SLAM_Interface):
+class EKF_SLAM(SLAM_Interface):
     def get_feature(self, i):
         '''
         get the estimated feature with index i

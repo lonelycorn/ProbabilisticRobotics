@@ -15,8 +15,8 @@ class LocalizationInterface:
         Initialize the algorithm.  This should be called only once, in the
         very beginning.
         ===INPUT===
-        Q: the process noise covariance matrix
-        R: the measurement noise covariance matrix
+        Q: the process noise covariance matrix (in pose space)
+        R: the measurement noise covariance matrix (in measurement space)
         true_map: the ground truth map
         ===OUTPUT===
         none

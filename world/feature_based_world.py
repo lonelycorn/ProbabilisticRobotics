@@ -65,6 +65,12 @@ class FeatureBasedWorld:
     def GetFeatureCount(self):
         return len(self.features)
 
+    def GetFeature(self, k):
+        if (0 <= k < len(self.features)):
+            return self.features[k]
+        else:
+            raise FeatureBasedWorldException('Index out of bounds.')
+
     def LoadFromFile(self, filename):
         print('Loading world features from: '+ filename)
         
