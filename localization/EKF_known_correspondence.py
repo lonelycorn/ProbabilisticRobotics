@@ -103,14 +103,12 @@ class EKF_Localization(LocalizationInterface):
         self.R = None           # measurement noise covar
         self.Q = None           # process noise covar
         self.true_map = None    # true map
-        #self.N = None           # number of features
         self.trajectory = None  # trajectory recorded
 
     def Initialize(self, Q, R, true_map):
         self.tick = 0
         
         self.true_map = true_map
-        #self.N = true_map.GetFeatureCount()
         self.Q = np.matrix(Q)
         self.R = np.matrix(R)
 

@@ -23,6 +23,7 @@ class Plotter:
         plt.figure(fig_id)
 
         if (trajectory is not None):
+            print(trajectory)
             for rp in trajectory:
                 # position
                 plt.plot(rp.x, rp.y, color+'o', markersize = self.pose_size)

@@ -12,9 +12,11 @@ class RobotActionException(Exception):
         return repr(self.value)
 
 class RobotAction:
-    # This is the velocity motion model, which assumes that a robot could be
-    # controlled through two velocities, i.e. a translational and a rotational
-    # velocity.
+    '''
+    This is the velocity motion model, which assumes that a robot could be
+    controlled through two velocities, i.e. a translational and a rotational
+    velocity.
+    '''
     def __init__(self, v, w):
         self.v = 1.0 * v # linear velocity
         self.w = 1.0 * w # angular velocity

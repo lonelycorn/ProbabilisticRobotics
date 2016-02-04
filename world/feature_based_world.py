@@ -15,6 +15,9 @@ class FeatureBasedWorldException(Exception):
         return repr(self.value)
 
 class FeatureBasedWorld:
+    '''
+    This class models feature-based worlds.
+    '''
     def __init__(self):
         self.features = []
 
@@ -37,9 +40,36 @@ class FeatureBasedWorld:
             raise FeatureBasedWorldException('feature should be an instance of FeatureState')
         self.features.append(feature);
 
+    def GetFeatureCount(self):
+        return len(self.features)
+
+    def GetFeature(self, k):
+        if (0 <= k < len(self.features)):
+            return self.features[k]
+        else:
+            raise FeatureBasedWorldException('Index out of bounds.')
+
+    def GetBounds(self):
+        '''
+        Get the boundary for the map.
+        ===OUTPUT===
+        two tuples, (x_min, x_max) and (y_min, y_max)
+        '''
+        if (0 == len(self.features)):
+            raise FeatureBasedWorldException('Empty map.')
+            
+        x = []
+        y = []
+        for f in self.features:
+            x.append(f.x)
+            y.append(f.y)
+
+        return (min(x), max(x)), (min(y), max(y))
+
     def GetTrueMeasurements(self, robot_pose):
         '''
-        Get the true measurements for a robot at robot_pose using a noise-free range sensor.
+        Get the true measurements for a robot at robot_pose using a noise-free
+        range sensor.
         ===INPUT===
         robot_pose: of class RobotPose, the pose at which the robot measures
         ===OUTPUT===
@@ -61,15 +91,6 @@ class FeatureBasedWorld:
             m.append(Measurement(d, phi, feature.s))
             
         return m
-
-    def GetFeatureCount(self):
-        return len(self.features)
-
-    def GetFeature(self, k):
-        if (0 <= k < len(self.features)):
-            return self.features[k]
-        else:
-            raise FeatureBasedWorldException('Index out of bounds.')
 
     def LoadFromFile(self, filename):
         print('Loading world features from: '+ filename)

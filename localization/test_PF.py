@@ -6,7 +6,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from simulator.action_history import ActionHistory
 from simulator.plotter import Plotter
 from simulator.simulator import Simulator
-from EKF_known_correspondence import EKF_Localization
+from PF_known_correspondence import PF_Localization
 
 import numpy as np
 
@@ -20,10 +20,10 @@ if __name__ == '__main__':
     ah = ActionHistory(dt)
     ah.LoadFromFile('../testcase/action_history1.txt')
 
-    # set up the SLAM algorithm
-    Q = np.diag([0.1, 0.1, 0.1]) # process noise; (x, y, theta). should be over-estimates
-    R = np.diag([0.2, 0.2, 0.01]) # measurement noise; (dist, bearing, signature),
-    algo = EKF_Localization()
+    # set up the localization algorithm
+    Q = np.diag([0.01, 0.01, 0.01]) # process noise; (x, y, theta). should be over-estimates
+    R = np.diag([0.2, 0.2, 0]) # measurement noise; (dist, bearing, signature),
+    algo = PF_Localization(10)
     algo.Initialize(Q, R, s.world)
     
     # test the SLAM algorithm with the simulator
