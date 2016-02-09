@@ -10,7 +10,7 @@ from robot.robot_pose import RobotPose
 from world.feature_state import FeatureState
 from world.feature_based_world import FeatureBasedWorld
 from utility.math import wrap_angle
-from localization_interface import LocalizationInterface
+from localization.localization_interface import LocalizationInterface
 
 class PF_Localization(LocalizationInterface):
     class ProcessNoise:
@@ -18,10 +18,6 @@ class PF_Localization(LocalizationInterface):
             self.noise_x = GaussianNoise((0, np.sqrt(Q[0, 0])))
             self.noise_y = GaussianNoise((0, np.sqrt(Q[1, 1])))
             self.noise_theta = GaussianNoise((0, np.sqrt(Q[2, 2])))
-
-            print(str(self.noise_x))
-            print(str(self.noise_y))
-            print(str(self.noise_theta))
 
         def GetSample(self):
             return RobotPose(self.noise_x.GetValue(),   \
@@ -83,7 +79,7 @@ class PF_Localization(LocalizationInterface):
     def prepare_resampling(self):
         # normalize particles' weights
         weights = [p.weight for p in self.particles]
-        scale = sum(weights) * 1.0 / self.M
+        scale = 1.0 / sum(weights)
         for p in self.particles:
             p.weight = p.weight * scale
 
@@ -91,6 +87,9 @@ class PF_Localization(LocalizationInterface):
         self.cdf = [self.particles[0].weight]
         for i in range(1, self.M):
             self.cdf.append(self.cdf[i - 1] + self.particles[i].weight)
+
+        #print("cdf is")
+        #print(self.cdf)
         
     def get_resampling(self):
         '''
@@ -113,8 +112,6 @@ class PF_Localization(LocalizationInterface):
             else:
                 l = m + 1
 
-        print(r)
-
         return self.particles[r]
 
     
@@ -129,9 +126,7 @@ class PF_Localization(LocalizationInterface):
         a RobotPose
         '''
         pose_noise = self.process_noise.GetSample()
-        #print("pose noise:" + str(pose_noise))
         rp = p.pose.ApplyAction(a, dt)
-        #print("after action (no noise)" + str(rp))
         rp = rp + pose_noise
         return rp
 
@@ -229,12 +224,11 @@ class PF_Localization(LocalizationInterface):
             
             # line 4
             pose = self.sample_motion_model(action, dt, p)
-            print("after sample " + str(pose))
+            #print("after sample " + str(pose))
             
             # line 5
             weight = self.measurement_model(measurements, p)
-            print("weight = " + str(weight))
-            #a=input('press any key to continue')
+            #print("weight = " + str(weight))
             
             # line 6
             new_particles.append(self.Particle(pose, weight))

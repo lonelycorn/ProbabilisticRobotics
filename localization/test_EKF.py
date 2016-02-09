@@ -6,7 +6,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from simulator.action_history import ActionHistory
 from simulator.plotter import Plotter
 from simulator.simulator import Simulator
-from EKF_known_correspondence import EKF_Localization
+from localization.EKF_known_correspondence import EKF_Localization
 
 import numpy as np
 
@@ -16,9 +16,9 @@ if __name__ == '__main__':
     dt = 1.0
 
     # load testcase
-    s = Simulator('../testcase/map1.txt', '../testcase/robot2.txt')
+    s = Simulator('../testcase/map1.txt', '../testcase/robot1.txt')
     ah = ActionHistory(dt)
-    ah.LoadFromFile('../testcase/action_history1.txt')
+    ah.LoadFromFile('../testcase/action_history_loop.txt')
 
     # set up the SLAM algorithm
     Q = np.diag([0.1, 0.1, 0.1]) # process noise; (x, y, theta). should be over-estimates
