@@ -23,6 +23,7 @@ if __name__ == '__main__':
     # set up the localization algorithm
     Q = np.diag([0.01, 0.01, 0.01]) # process noise; (x, y, theta). should be over-estimates
     R = np.diag([0.2, 0.2, 0]) # measurement noise; (dist, bearing, signature),
+    #R = np.diag([0.02, 0.02, 0]) # measurement noise; (dist, bearing, signature),
     algo = PF_Localization(10)
     algo.Initialize(Q, R, s.world)
     
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     while (not ah.EOF()):
         t, ra = ah.GetNext()
         m = s.Update(t, ra)
+        algo.SetTruePose(s.robot.true_pose)
         algo.Update(t, ra, m)
 
     algo.Finalize()

@@ -59,6 +59,9 @@ class PF_Localization(LocalizationInterface):
         def __init__(self, pose, weight):
             self.pose = pose
             self.weight = weight
+
+        def GetPose(self):
+            return self.pose
             
         def GetState(self):
             '''
@@ -79,17 +82,23 @@ class PF_Localization(LocalizationInterface):
     def prepare_resampling(self):
         # normalize particles' weights
         weights = [p.weight for p in self.particles]
+        print('particles weights')
+        print(weights)
+        print(sum(weights))
         scale = 1.0 / sum(weights)
+        print(scale)
         for p in self.particles:
             p.weight = p.weight * scale
+        print('after scaling')
+        print([p.weight for p in self.particles])
 
-        # cumulative distribution function
-        self.cdf = [self.particles[0].weight]
-        for i in range(1, self.M):
-            self.cdf.append(self.cdf[i - 1] + self.particles[i].weight)
+        #cumulative distribution function. cdv[k] = sum_{i=0}^k weight_i
+        self.cdf = [0]
+        for i in range(0, self.M):
+            self.cdf.append(self.cdf[i] + self.particles[i].weight)
 
-        #print("cdf is")
-        #print(self.cdf)
+        print("cdf is")
+        print(self.cdf)
         
     def get_resampling(self):
         '''
@@ -101,18 +110,25 @@ class PF_Localization(LocalizationInterface):
 
         # search for the smallest index whose cdf that is larger than or equal
         # to w. by the end of the search r would be the result.
-        l = 0
-        r = self.M - 1
-        while (l < r):
-            m = (l + r) / 2
-            if (self.cdf[m] == w):
-                break;
-            if (self.cdf[m] > w):
-                r = m
-            else:
-                l = m + 1
+        #l = 0
+        #r = self.M - 1
+        #while (l < r):
+            #m = (l + r) / 2
+            #if (self.cdf[m] == w):
+                #break;
+            #if (self.cdf[m] > w):
+                #r = m
+            #else:
+                #l = m + 1
+        #return self.particles[r]
+        
+        for r in range(self.M):
+            if ((self.cdf[r]<w) and (self.cdf[r+1]>=w)):
+                print("w="+str(w)+", r="+str(r))
+                return self.particles[r]
+        print("FUCK WE ARE IN TROUBLE")
 
-        return self.particles[r]
+        
 
     
     def sample_motion_model(self, a, dt, p):
@@ -157,7 +173,7 @@ class PF_Localization(LocalizationInterface):
             # compute probability of measurement. 
             w = w * self.measurement_noise.GetProbability([n_r, n_phi, n_s])
 
-        return w
+        return w # minimal probability to avoid extinction.
         
     def get_pose(self):
         '''
@@ -170,7 +186,51 @@ class PF_Localization(LocalizationInterface):
             sum_weight = sum_weight + p.weight
         avg = sum_pose / sum_weight
         return RobotPose(avg[0, 0], avg[1, 0], avg[2, 0])
+
+    def plot_particles(self, fig_title, color='r'):
+        '''
+        For debugging purposes only.
+        '''
+        import matplotlib.pyplot as plt
+        fig_id = 1
+        self.dash_size = 0.2
+        self.line_width = 2
+        self.map_size = 5
+        self.pose_size = 8
+        self.feature_size= 12
         
+        plt.figure(fig_id)
+
+        if (self.particles is not None):
+            for p in self.particles:
+                rp = p.GetPose()
+                
+                # position
+                plt.plot(rp.x, rp.y, color+'o', markersize = self.pose_size)
+                # heading dash
+                plt.plot([rp.x, rp.x + np.cos(rp.theta) * self.dash_size], \
+                         [rp.y, rp.y + np.sin(rp.theta) * self.dash_size], \
+                         color+'-', linewidth = self.line_width)
+        rp = self.true_pose
+        # position
+        plt.plot(rp.x, rp.y, 'rx', markersize = self.pose_size)
+        # heading dash
+        plt.plot([rp.x, rp.x + np.cos(rp.theta) * self.dash_size], \
+                 [rp.y, rp.y + np.sin(rp.theta) * self.dash_size], \
+                 'r-', linewidth = self.line_width)
+
+        if (self.true_map is not None):
+            for f in self.true_map.features:
+                plt.plot(f.x, f.y, color+'p', markersize = self.feature_size)
+
+        plt.axis([-self.map_size, self.map_size, -self.map_size, self.map_size])
+        plt.title(fig_title)
+
+        plt.show()
+
+    def SetTruePose(self, p):
+        self.true_pose = p
+
 
     #======================#
     #     Public API's     #
@@ -234,13 +294,22 @@ class PF_Localization(LocalizationInterface):
             new_particles.append(self.Particle(pose, weight))
 
         self.particles = new_particles
+        self.plot_particles("t="+str(self.tick)+", before resampling",'k')
 
         # line 8 ~ 11, resampling
         new_particles = list()
         self.prepare_resampling()
         for i in range(self.M):
+        #for i in range(self.M * 9 / 10):
             p = self.get_resampling()
             new_particles.append(p)
+
+        #for i in range(self.M - len(new_particles)):
+            #p = self.get_random_particle()
+            #new_particles.append(p)
+
+        self.particles = new_particles
+        self.plot_particles("t="+str(self.tick)+", after resampling",'b')
 
         # save trajectory
         rp = self.get_pose()
