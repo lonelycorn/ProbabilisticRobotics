@@ -8,7 +8,7 @@ def angular_velocity_is_trivial(omega):
     '''
     test if the provided angular velocity is small enough to be treated as zero
     '''
-    return (omega < 1e-5)
+    return (np.abs(omega) < 1e-5)
 
 
 if __name__ == '__main__':

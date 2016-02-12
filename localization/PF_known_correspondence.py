@@ -6,6 +6,7 @@ from scipy.stats import norm
 import numpy as np
 from noise.Gaussian_noise import GaussianNoise
 from noise.uniform_noise import UniformNoise
+from robot.robot_action import RobotAction
 from robot.robot_pose import RobotPose
 from world.feature_state import FeatureState
 from world.feature_based_world import FeatureBasedWorld
@@ -14,12 +15,14 @@ from localization.localization_interface import LocalizationInterface
 
 class PF_Localization(LocalizationInterface):
     class ProcessNoise:
-        def __init__(self, Q):
-            self.noise_x = GaussianNoise((0, np.sqrt(Q[0, 0])))
-            self.noise_y = GaussianNoise((0, np.sqrt(Q[1, 1])))
-            self.noise_theta = GaussianNoise((0, np.sqrt(Q[2, 2])))
+        '''
+        '''
+        def __init__(self, alpha):
+            self.alpha = alpha
 
-        def GetSample(self):
+        def GetSample(self, pose, action):
+            random.normal(self.mu, self.sigma)
+            
             return RobotPose(self.noise_x.GetValue(),   \
                              self.noise_y.GetValue(),   \
                              self.noise_theta.GetValue())
@@ -40,7 +43,7 @@ class PF_Localization(LocalizationInterface):
             w = 1.0
             for i in range(3):
                 if (self.R[i, i] > 0):
-                    w = w * norm.pdf(deviation[i], 0, self.R[i, i])
+                    w = w * norm.pdf(deviation[i], 0, np.sqrt(self.R[i, i]))
 
             return w
 
@@ -56,6 +59,9 @@ class PF_Localization(LocalizationInterface):
                              self.noise_theta.GetValue())
 
     class Particle:
+        def __str__(self):
+            return str(self.pose)+", weight="+str(self.weight)
+            
         def __init__(self, pose, weight):
             self.pose = pose
             self.weight = weight
@@ -82,23 +88,15 @@ class PF_Localization(LocalizationInterface):
     def prepare_resampling(self):
         # normalize particles' weights
         weights = [p.weight for p in self.particles]
-        print('particles weights')
-        print(weights)
-        print(sum(weights))
         scale = 1.0 / sum(weights)
-        print(scale)
+
         for p in self.particles:
             p.weight = p.weight * scale
-        print('after scaling')
-        print([p.weight for p in self.particles])
 
         #cumulative distribution function. cdv[k] = sum_{i=0}^k weight_i
         self.cdf = [0]
         for i in range(0, self.M):
             self.cdf.append(self.cdf[i] + self.particles[i].weight)
-
-        print("cdf is")
-        print(self.cdf)
         
     def get_resampling(self):
         '''
@@ -108,50 +106,64 @@ class PF_Localization(LocalizationInterface):
         '''
         w = np.random.uniform()
 
-        # search for the smallest index whose cdf that is larger than or equal
-        # to w. by the end of the search r would be the result.
-        #l = 0
-        #r = self.M - 1
-        #while (l < r):
-            #m = (l + r) / 2
-            #if (self.cdf[m] == w):
-                #break;
-            #if (self.cdf[m] > w):
-                #r = m
-            #else:
-                #l = m + 1
-        #return self.particles[r]
-        
-        for r in range(self.M):
-            if ((self.cdf[r]<w) and (self.cdf[r+1]>=w)):
-                print("w="+str(w)+", r="+str(r))
-                return self.particles[r]
-        print("FUCK WE ARE IN TROUBLE")
+        # search for such an index m that w falls into [cdf[m], cdf[m+1])
+        l = 0
+        r = self.M - 1
+        while (l < r):
+            m = (l + r) / 2
 
-        
+            if ((self.cdf[m] <= w) and (self.cdf[m + 1] > w)):
+                r = m
+                break
+                
+            if (self.cdf[m] < w):
+                l = m + 1
+            else:
+                r = m
 
-    
+        return self.particles[r]
+        
+        
     def sample_motion_model(self, a, dt, p):
         '''
-        Find the robot's pose, given the action and duration, and the particle
+        Find the robot's pose, given the action and duration, and the particle.
+        Using the Velocity Motion Model on page 124 of Probabilistic Robotics.
         ===INPUT===
-        a:  of RobotAction
-        dt: duration of a
-        p:  the particle of interest
+        a:  of RobotAction.
+        dt: duration of a.
+        p:  the particle of interest.
         ===OUTPUT===
-        a RobotPose
+        a RobotPose.
         '''
-        pose_noise = self.process_noise.GetSample()
+        def sample(cov):
+            '''
+            sample from a zero-mean Gaussian distribution with then given covariance.
+            '''
+            if (cov > 0):
+                return np.random.normal(0, np.sqrt(cov))
+            else:
+                return 0
+
+        # c.f. page 124
+        cov_v = self.alpha[0]*a.v*a.v + self.alpha[1]*a.w*a.w
+        cov_w = self.alpha[2]*a.v*a.v + self.alpha[3]*a.w*a.w
+        cov_gamma = self.alpha[4]*a.v*a.v + self.alpha[5]*a.w*a.w
+
+        action_noise = RobotAction(sample(cov_v), sample(cov_w))
+
+        a = a + RobotAction(sample(cov_v), sample(cov_w))
+        
         rp = p.pose.ApplyAction(a, dt)
-        rp = rp + pose_noise
+        rp.theta = rp.theta + sample(cov_gamma)*dt
+
         return rp
 
-    def measurement_model(self, measurements, p):
+    def measurement_model(self, measurements, pose):
         '''
         Compute the probability of the particle and the measurements given
         ===INPUT===
         measurement: a list of Measurement
-        p: the particle of interest
+        pose: the proposed pose
         ===OUTPUT===
         a decimal representing the probability
         '''
@@ -161,19 +173,21 @@ class PF_Localization(LocalizationInterface):
             j = m.s # assuming the signature gives the correspondence
             
             fs = self.true_map.GetFeature(j)
-            delta_x = fs.x - p.pose.x
-            delta_y = fs.y - p.pose.y
-            q = delta_x * delta_x + delta_y * delta_y
+            delta_x = fs.x - pose.x
+            delta_y = fs.y - pose.y
             
-            # actual measurement noise
-            n_r = np.sqrt(q) - m.r
-            n_phi = wrap_angle(np.arctan2(delta_y, delta_x) - m.phi)
+            d = np.sqrt(delta_x * delta_x + delta_y * delta_y)
+            b = np.arctan2(delta_y, delta_x) - pose.theta
+            
+            # deviation from expected measurement
+            n_r = d - m.r
+            n_phi = wrap_angle(b - m.phi)
             n_s = fs.s - m.s
 
             # compute probability of measurement. 
             w = w * self.measurement_noise.GetProbability([n_r, n_phi, n_s])
 
-        return w # minimal probability to avoid extinction.
+        return w
         
     def get_pose(self):
         '''
@@ -193,10 +207,10 @@ class PF_Localization(LocalizationInterface):
         '''
         import matplotlib.pyplot as plt
         fig_id = 1
-        self.dash_size = 0.2
-        self.line_width = 2
+        self.dash_size = 0.05
+        self.line_width = 1
         self.map_size = 5
-        self.pose_size = 8
+        self.pose_size = 3
         self.feature_size= 12
         
         plt.figure(fig_id)
@@ -240,16 +254,15 @@ class PF_Localization(LocalizationInterface):
         self.particles = None           # particles in state space
         self.tick = None                # last time of run
         self.measurement_noise = None   # measurement noise generator
-        self.process_noise = None       # process noise generator
+        self.alpha = None               # process noise parameters
         self.random_pose = None         # random pose generator
         self.true_map = None            # true map
         self.trajectory = None          # trajectory recorded
 
-    def Initialize(self, Q, R, true_map):
-        
+    def Initialize(self, alpha, R, true_map):
         self.tick = 0
-        
-        self.process_noise = self.ProcessNoise(Q)
+
+        self.alpha = alpha
         self.measurement_noise = self.MeasurementNoise(R)
         self.true_map = true_map
 
@@ -280,36 +293,27 @@ class PF_Localization(LocalizationInterface):
         # line 2
         new_particles = list()
         for p in self.particles:
-            #print("before sample " + str(p.pose))
-            
             # line 4
             pose = self.sample_motion_model(action, dt, p)
-            #print("after sample " + str(pose))
             
             # line 5
-            weight = self.measurement_model(measurements, p)
-            #print("weight = " + str(weight))
+            weight = self.measurement_model(measurements, pose)
             
             # line 6
             new_particles.append(self.Particle(pose, weight))
 
         self.particles = new_particles
-        self.plot_particles("t="+str(self.tick)+", before resampling",'k')
+        #self.plot_particles("t="+str(self.tick)+", before resampling",'k')
 
         # line 8 ~ 11, resampling
         new_particles = list()
         self.prepare_resampling()
         for i in range(self.M):
-        #for i in range(self.M * 9 / 10):
             p = self.get_resampling()
             new_particles.append(p)
 
-        #for i in range(self.M - len(new_particles)):
-            #p = self.get_random_particle()
-            #new_particles.append(p)
-
         self.particles = new_particles
-        self.plot_particles("t="+str(self.tick)+", after resampling",'b')
+        #self.plot_particles("t="+str(self.tick)+", after resampling",'b')
 
         # save trajectory
         rp = self.get_pose()
@@ -327,3 +331,25 @@ class PF_Localization(LocalizationInterface):
         the pose estimates during updates.
         '''
         return self.trajectory
+
+    def TestProcessModel(self):
+        M = 100
+        dt = 1.0
+        weight = 1.0
+        p = self.Particle(RobotPose(0.0, 0.0, 0.0), weight)
+        new_particles = list()
+        action = RobotAction(1.0, 0.0)
+        
+        self.alpha = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        
+        for i in range(M):
+            pose = self.sample_motion_model(action, dt, p)
+            new_particles.append(self.Particle(pose, weight))
+
+        self.particles = new_particles
+        self.true_pose = p.pose
+        self.plot_particles("process model")
+
+
+if __name__ == '__main__':
+    pass

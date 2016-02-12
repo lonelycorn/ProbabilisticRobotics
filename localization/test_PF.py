@@ -21,11 +21,12 @@ if __name__ == '__main__':
     ah.LoadFromFile('../testcase/action_history_loop.txt')
 
     # set up the localization algorithm
-    Q = np.diag([0.01, 0.01, 0.01]) # process noise; (x, y, theta). should be over-estimates
-    R = np.diag([0.2, 0.2, 0]) # measurement noise; (dist, bearing, signature),
-    #R = np.diag([0.02, 0.02, 0]) # measurement noise; (dist, bearing, signature),
-    algo = PF_Localization(10)
-    algo.Initialize(Q, R, s.world)
+    alpha = [0.1, 0.1, 0.1, 0.1, 0.05, 0.05] # process noise parameters.
+    R = np.diag([0.1, 0.1, 0]) # measurement noise; (dist, bearing, signature),
+    algo = PF_Localization(100)
+    algo.Initialize(alpha, R, s.world)
+
+    #algo.TestProcessModel()
     
     # test the SLAM algorithm with the simulator
     ah.Rewind()
