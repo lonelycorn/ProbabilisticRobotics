@@ -1,7 +1,9 @@
 import sys
 import os
-from Gaussian_noise import GaussianNoise
-from uniform_noise import UniformNoise
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+
+from noise.Gaussian_noise import GaussianNoise
+from noise.uniform_noise import UniformNoise
 
 class Noise:
     def __init__(self):

@@ -25,6 +25,8 @@ class Simulator:
         self.robot.LoadFromFile(robot_filename)
         self.world.LoadFromFile(map_filename)
 
+        self.pose_history.append(self.robot.GetPose()) # initial pose
+
     def Update(self, t, action):
         '''
         Update the simulator.

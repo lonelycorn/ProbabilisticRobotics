@@ -6,7 +6,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from simulator.action_history import ActionHistory
 from simulator.plotter import Plotter
 from simulator.simulator import Simulator
-from EKF_known_correspondence import EKF_SLAM
+from graph_known_correspondence import GraphSLAM
 
 import numpy as np
 
@@ -21,8 +21,8 @@ if __name__ == '__main__':
     # set up the SLAM algorithm
     Q = np.diag([0.1, 0.1, 0.1]) # process noise; (x, y, theta). should be over-estimates
     R = np.diag([0.2, 0.2, 0.01]) # measurement noise; (dist, bearing, signature),
-    algo = EKF_SLAM()
-    algo.Initialize(Q, R, s.world.GetFeatureCount())
+    algo = GraphSLAM()
+    algo.Initialize(Q, R, ah.GetLength(), s.world.GetFeatureCount())
     
     # test the SLAM algorithm with the simulator
     ah.Rewind()

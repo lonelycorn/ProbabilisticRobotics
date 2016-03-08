@@ -8,6 +8,7 @@ from world.feature_state import FeatureState
 from world.feature_based_world import FeatureBasedWorld
 from SLAM_interface import SLAM_Interface
 from utility.math import wrap_angle
+from utility.math import INFINITY
 
 
 class EKF_SLAM(SLAM_Interface):
@@ -61,7 +62,7 @@ class EKF_SLAM(SLAM_Interface):
         '''
         get the selection matrix for robot pose.
         '''
-        return np.matrix(np.eye(3, 3 * self.N + 3))
+        return np.matrix(np.eye(3, 3*self.N+3))
 
     def motion_update(self, action, dt):
         '''
@@ -74,10 +75,7 @@ class EKF_SLAM(SLAM_Interface):
         # delta of pose
         rp = self.get_pose()
         rp_new = rp.ApplyAction(action, dt)
-        rp_delta = np.matrix(np.zeros((3,1)))
-        rp_delta[0, 0] = rp_new.x - rp.x
-        rp_delta[1, 0] = rp_new.y - rp.y
-        rp_delta[2, 0] = rp_new.theta - rp.theta
+        rp_delta = rp_new.ToMatrix() - rp.ToMatrix()
         
         # line 2
         F_x = self.get_pose_selection_matrix()
@@ -107,9 +105,7 @@ class EKF_SLAM(SLAM_Interface):
         rp = self.get_pose()
 
         # convert measurement into a matrix
-        z = np.matrix([[measurement.r], \
-                       [measurement.phi], \
-                       [measurement.s]])
+        z = measurement.ToMatrix()
         
         # line 8
         j = measurement.s # assuming the signature gives the correspondence
@@ -147,20 +143,18 @@ class EKF_SLAM(SLAM_Interface):
         F_xj = self.get_feature_selection_matrix(j)
 
         # line 16
-        tmp = np.matrix(np.zeros((3, 6)))
-        tmp[0, 0] = -delta_x * np.sqrt(q)
-        tmp[0, 1] = -delta_y * np.sqrt(q)
-        tmp[0, 3] =  delta_x * np.sqrt(q)
-        tmp[0, 4] =  delta_y * np.sqrt(q)
-        tmp[1, 0] = -delta_y 
-        tmp[1, 1] = -delta_x 
-        tmp[1, 2] = -q
-        tmp[1, 3] = -delta_y
-        tmp[1, 4] =  delta_x
-        tmp[2, 5] =  q
-        #~ print("tmp=")
-        #~ print(tmp)
-        H_t = tmp * F_xj / q
+        h_t_i = np.matrix(np.zeros((3, 6)))
+        h_t_i[0, 0] = -delta_x * np.sqrt(q)
+        h_t_i[0, 1] = -delta_y * np.sqrt(q)
+        h_t_i[0, 3] =  delta_x * np.sqrt(q)
+        h_t_i[0, 4] =  delta_y * np.sqrt(q)
+        h_t_i[1, 0] =  delta_y 
+        h_t_i[1, 1] = -delta_x 
+        h_t_i[1, 2] = -q
+        h_t_i[1, 3] = -delta_y
+        h_t_i[1, 4] =  delta_x
+        h_t_i[2, 5] =  q
+        H_t = h_t_i * F_xj / q
         #~ print("H_t=")
         #~ print(H_t)
         
@@ -169,13 +163,13 @@ class EKF_SLAM(SLAM_Interface):
         K_t = self.sigma * H_t.T * np.linalg.inv(H_t * self.sigma * H_t.T + self.R)
         
         # line 18
-        self.mu = self.mu + K_t * (z - z_hat)
+        self.mu += K_t * (z - z_hat)
 
         print("mu=")
         print(self.mu)
 
         # line 19
-        self.sigma = self.sigma - K_t * H_t * self.sigma
+        self.sigma += - K_t * H_t * self.sigma
 
         
 
@@ -212,7 +206,7 @@ class EKF_SLAM(SLAM_Interface):
         self.mu = np.matrix(np.zeros((3 * N + 3, 1)))
         
         # initialize the covar
-        self.sigma = np.matrix(np.eye(3 * N + 3)) * 1e4 # know nothing about map features. how about signatures?
+        self.sigma = np.matrix(np.eye(3 * N + 3)) * INFINITY # know nothing about map features. how about signatures?
         self.sigma[0,0] = 0.0 # we don't want the origin to shift
         self.sigma[1,1] = 0.0
         self.sigma[2,2] = 0.0

@@ -2,10 +2,11 @@ import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
+import numpy as np
+
 from robot.robot_pose import RobotPose
 from sensor.measurement import Measurement
-from feature_state import FeatureState
-import numpy as np
+from world.feature_state import FeatureState
 from utility.math import wrap_angle
 
 class FeatureBasedWorldException(Exception):

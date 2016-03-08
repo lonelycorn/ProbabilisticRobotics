@@ -44,7 +44,7 @@ class RobotPose:
         ===OUTPUT===
         the robot pose after the update
         '''
-        from robot_action import RobotAction
+        from robot.robot_action import RobotAction
         if (not (isinstance(robot_action, RobotAction))):
             raise RobotPoseException('robot_action should be an instance of RobotAction');
 
@@ -52,6 +52,19 @@ class RobotPose:
         # could play with different RobotAction models
         self = robot_action.ApplyToPose(self, dt)
         return self
+
+    def ToMatrix(self):
+        '''
+        Get a matrix representation of the robot pose
+        === OUTPUT ===
+        A 3-by-1 matrix [[x], [y], [theta]]
+        '''
+        m = np.matrix(np.zeros((3, 1)))
+        m[0, 0] = self.x
+        m[1, 0] = self.y
+        m[2, 0] = self.theta
+
+        return m
 
 if __name__ == "__main__":
     pass

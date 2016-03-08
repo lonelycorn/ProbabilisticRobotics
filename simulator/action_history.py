@@ -34,6 +34,12 @@ class ActionHistory:
         self.time_history.append(-1.0)
         self.action_history.append(RobotAction(0,0))
 
+    def GetLength(self):
+        '''
+        Get the length of the action history.
+        '''
+        return self.history_length
+
     def Rewind(self):
         '''
         Rewind the time history.
@@ -61,9 +67,6 @@ class ActionHistory:
             
         if (self.tick > self.time_history[self.idx]):
             self.idx = self.idx + 1
-
-        #~ if (self.EOF()):
-            #~ return (None, None)
 
         return (self.tick, self.action_history[self.idx])
 

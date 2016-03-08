@@ -5,7 +5,7 @@ import numpy as np
 
 #from <file_name> import <ClassName>
 from noise.noise import Noise
-from measurement import Measurement
+from sensor.measurement import Measurement
 
 class RangeSensorException(Exception):
     def __init__(self, value):

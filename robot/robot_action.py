@@ -44,7 +44,7 @@ class RobotAction:
         ===OUTPUT===
         the pose after the action
         '''
-        from robot_pose import RobotPose
+        from robot.robot_pose import RobotPose
         if (not (isinstance(robot_pose, RobotPose))):
             raise RobotActionException('robot_pose should be an instance of RobotPose');
          

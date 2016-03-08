@@ -4,8 +4,8 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 import numpy as np
 
-from robot_pose import RobotPose
-from robot_action import RobotAction
+from robot.robot_pose import RobotPose
+from robot.robot_action import RobotAction
 from noise.noise import Noise
 from sensor.range_sensor import RangeSensor
 

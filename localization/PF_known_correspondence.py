@@ -327,7 +327,7 @@ class PF_Localization(LocalizationInterface):
 
     def GetTrajectory(self):
         '''
-        EKF localization doesn't keep the trajectory in the states, but we saved
+        PF localization doesn't keep the trajectory in the states, but we saved
         the pose estimates during updates.
         '''
         return self.trajectory
