@@ -110,7 +110,7 @@ class PF_Localization(LocalizationInterface):
         l = 0
         r = self.M - 1
         while (l < r):
-            m = (l + r) / 2
+            m = np.int((l + r) / 2)
 
             if ((self.cdf[m] <= w) and (self.cdf[m + 1] > w)):
                 r = m

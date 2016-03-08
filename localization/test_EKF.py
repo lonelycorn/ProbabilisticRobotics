@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     dt = 1.0
 
     # load testcase
-    s = Simulator('../testcase/map1.txt', '../testcase/robot1.txt')
+    s = Simulator('../testcase/map2.txt', '../testcase/robot1.txt')
     ah = ActionHistory(dt)
     ah.LoadFromFile('../testcase/action_history_loop.txt')
 

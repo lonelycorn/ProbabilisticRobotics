@@ -1,2 +1,2 @@
-# ProbabilisticRobotics_SLAM
-Test of different SLAM algorithms in Probabilistic Robotics
+# ProbabilisticRobotics
+Test of different localization, mapping and SLAM algorithms in Thrun's Probabilistic Robotics.
