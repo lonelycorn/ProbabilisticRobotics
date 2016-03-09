@@ -38,7 +38,7 @@ class FeatureBasedWorld:
         none
         '''
         if (not (isinstance(feature, FeatureState))):
-            raise FeatureBasedWorldException('feature should be an instance of FeatureState')
+            raise FeatureBasedWorldException('feature shoud be an instance of FeatureState.')
         self.features.append(feature);
 
     def GetFeatureCount(self):
@@ -78,7 +78,7 @@ class FeatureBasedWorld:
         '''
         
         if (not (isinstance(robot_pose, RobotPose))):
-            raise FeatureBasedWorldException('robot_pose should be an instance of RobotPose')
+            raise FeatureBasedWorldException('robot_pose should be an instance of RobotPose.')
 
         m = []
 

@@ -1,10 +1,14 @@
-#!/usr/bin/env python
-# from <file_name> import <ClassName>
-from Gaussian_noise import GaussianNoise
-from uniform_noise import UniformNoise
-from noise import Noise
+#!/usr/bin/env python3
+import sys
+import os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
-print 'testing noises'
+# from <file_name> import <ClassName>
+from noise.Gaussian_noise import GaussianNoise
+from noise.uniform_noise import UniformNoise
+from noise.noise_builder import NoiseBuilder
+
+print('testing noises')
 
 print('Gaussian noise')
 g = GaussianNoise([0, 2.0])
@@ -17,7 +21,7 @@ print(u)
 print(u.GetValue())
 
 print('\nRegister noise')
-n = Noise()
+n = NoiseBuilder()
 n.RegisterNoise(0.2, g)
 n.RegisterNoise(0.8, u)
 print(n)

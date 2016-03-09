@@ -4,9 +4,9 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 import numpy as np
 
-from robot.robot_pose import RobotPose
 from robot.robot_action import RobotAction
-from noise.noise import Noise
+from robot.robot_pose import RobotPose
+from noise.noise_builder import NoiseBuilder
 from sensor.range_sensor import RangeSensor
 
 class RobotException(Exception):
@@ -41,12 +41,12 @@ class Robot:
         fd = open(filename, "r")
 
         # translational noise
-        self.translation_noise = Noise()
+        self.translation_noise = NoiseBuilder()
         self.translation_noise.LoadFromFile(fd)
         fd.readline()
 
         # rotational noise
-        self.rotation_noise = Noise()
+        self.rotation_noise = NoiseBuilder()
         self.rotation_noise.LoadFromFile(fd)
         fd.readline()
         
@@ -56,7 +56,7 @@ class Robot:
         fd.readline()
         
         ## dist noise
-        dist_noise = Noise()
+        dist_noise = NoiseBuilder()
         dist_noise.LoadFromFile(fd)
         fd.readline()
         
@@ -65,7 +65,7 @@ class Robot:
         fd.readline()
         
         ## angle noise
-        angle_noise = Noise()
+        angle_noise = NoiseBuilder()
         angle_noise.LoadFromFile(fd)
         fd.readline()
         

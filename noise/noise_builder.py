@@ -5,7 +5,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from noise.Gaussian_noise import GaussianNoise
 from noise.uniform_noise import UniformNoise
 
-class Noise:
+class NoiseBuilder:
     def __init__(self):
         self.items = [] # a list of dictionary
         self.noise_type_list = [GaussianNoise, UniformNoise]

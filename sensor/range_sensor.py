@@ -4,7 +4,7 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import numpy as np
 
 #from <file_name> import <ClassName>
-from noise.noise import Noise
+from noise.noise_builder import NoiseBuilder
 from sensor.measurement import Measurement
 
 class RangeSensorException(Exception):
@@ -19,16 +19,16 @@ class RangeSensor:
         if dist_ranges contains two same value then we are not constraining the distance
         if angle_ranges contains two same value then we are not constraining the angle
         '''
-        if (not (isinstance(dist_noise, Noise))):
-            raise RangeSensorException('dist_noise must be an instance of Noise')
+        if (not (isinstance(dist_noise, NoiseBuilder))):
+            raise RangeSensorException('dist_noise must be an instance of NoiseBuilder.')
         self.dist_noise = dist_noise
         
         if (not (isinstance(dist_ranges, list) and (2 == len(dist_ranges)))):
-            raise RangeSensorException('dist_ranges must be a list with two items')
+            raise RangeSensorException('dist_ranges must be a list with two items.')
         self.dist_ranges = [min(dist_ranges), max(dist_ranges)]
 
-        if (not (isinstance(angle_noise, Noise))):
-            raise RangeSensorException('angle_noise must be an instance of Noise')
+        if (not (isinstance(angle_noise, NoiseBuilder))):
+            raise RangeSensorException('angle_noise must be an instance of Noise.')
         self.angle_noise = angle_noise
 
         if (not (isinstance(angle_ranges, list) and (2 == len(angle_ranges)))):
@@ -58,7 +58,7 @@ class RangeSensor:
         '''
         get the actual reading that corresponds to the groud truth provided
         ===INPUT===
-        ground_truth: the actual distance and bearing, i.e. a measurement from an ideal noise-free sensor
+        ground_truth: the actual distance and bearing, i.e. a measurement from an ideal noise-free sensor.
         ==OUTPUT=== 
         visible represents whether the sensor could sense it.
         then a Measurement, the actual reading of the sensor

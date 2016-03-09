@@ -25,8 +25,8 @@ class Measurement:
         self.s = s
 
     def __str__(self):
-        return 'Measurement: r = ' + str(self.r) + ' m, phi = ' + \
-                str(rad2deg(self.phi)) + ' deg, s = ' + str(self.s)
+        return 'Measurement: r = ' + str(self.r) + ', phi = ' + \
+                str(rad2deg(self.phi)) + 'deg, s = ' + str(self.s)
 
     def ToMatrix(self):
         '''

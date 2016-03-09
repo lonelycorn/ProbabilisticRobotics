@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 # from <file_name> import <ClassName>
-from feature_state import FeatureState
-from feature_based_world import FeatureBasedWorld
+from world.feature_state import FeatureState
+from world.feature_based_world import FeatureBasedWorld
 from robot.robot_pose import RobotPose
 
 f1 = FeatureState(1,0,1)

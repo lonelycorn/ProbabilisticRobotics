@@ -1,4 +1,7 @@
 import numpy as np
+import sys
+import os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 class RobotPoseException(Exception):
     def __init__(self, value):

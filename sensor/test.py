@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -7,12 +7,12 @@ sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import numpy as np
 
 # from <file_name> import <ClassName>
-from noise.noise import Noise
+from noise.noise_builder import NoiseBuilder
 from noise.Gaussian_noise import GaussianNoise
 from noise.uniform_noise import UniformNoise
 
-from range_sensor import RangeSensor
-from measurement import Measurement
+from sensor.range_sensor import RangeSensor
+from sensor.measurement import Measurement
 
 
 print('testing Measurement')
@@ -22,10 +22,10 @@ print(m)
 # prepare noises
 ng = GaussianNoise([0, 1])
 nu = UniformNoise([-3, 3])
-ndist = Noise()
+ndist = NoiseBuilder()
 ndist.RegisterNoise(0.5, ng)
 ndist.RegisterNoise(0.5, nu)
-nangle = Noise()
+nangle = NoiseBuilder()
 nangle.RegisterNoise(0.8, ng)
 nangle.RegisterNoise(0.2, nu)
 

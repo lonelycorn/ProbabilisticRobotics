@@ -1,17 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
 # from <path.file> import <class>
-from robot_action import RobotAction
-from robot_pose import RobotPose
-from robot import Robot
+from robot.robot_action import RobotAction
+from robot.robot_pose import RobotPose
+from robot.robot import Robot
 
 from sensor.range_sensor import RangeSensor
 
-from noise.noise import Noise
+from noise.noise_builder import NoiseBuilder
 from noise.Gaussian_noise import GaussianNoise
 from noise.uniform_noise import UniformNoise
 
